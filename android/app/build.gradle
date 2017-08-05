@@ -1,5 +1,4 @@
 apply plugin: "com.android.application"
-apply plugin: 'com.google.gms.google-services'
 
 import com.android.build.OutputFile
 
@@ -95,7 +94,7 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "com.retweeter"
+        applicationId "com.vijayt.retweeter"
         minSdkVersion 16
         targetSdkVersion 22
         versionCode 1
@@ -151,3 +150,5 @@ task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.compile
     into 'libs'
 }
+
+apply plugin: "com.google.gms.google-services"

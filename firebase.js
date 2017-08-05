@@ -6,9 +6,4 @@ const configurationOptions = {
 
 const firebase = RNFirebase.initializeApp(configurationOptions);
 
-firebase.messaging().getToken()
-    .then((token) => {
-        console.warn('Device FCM Token: ', token);
-    });
-
 export default firebase;

@@ -1,4 +1,4 @@
-package com.retweeter;
+package com.vijayt.retweeter;
 
 import com.facebook.react.ReactActivity;
 

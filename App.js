@@ -16,7 +16,12 @@ export default class App extends React.Component {
     }
 
     handleSetPress() {
-        this.setState({ isQuerySet: true });
+        fetch(`https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets?query=${encodeURIComponent(this.state.query)}`)
+        .then(response => response.json())
+        .then(json => {
+            console.log(json);
+            this.setState({ isQuerySet: true });
+        });
     }
 
     render() {

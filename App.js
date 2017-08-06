@@ -1,31 +1,73 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableHighlight } from 'react-native';
 import firebase from './firebase';
 
 export default class App extends React.Component {
-  componentDidMount() {
-    firebase.messaging().getToken()
-    .then((token) => {
-        console.warn('Device FCM Token: ', token);
-    });
-  }
-  
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text>Open up App.js to start working on your app!</Text>
-        <Text>Changes you make will automatically reload.</Text>
-        <Text>Shake your phone to open the developer menu.</Text>
-      </View>
-    );
-  }
+    state = {
+        isQuerySet: false,
+        query: ''
+    }
+
+    componentDidMount() {
+        firebase.messaging().getToken()
+            .then((token) => {
+                console.warn('Device FCM Token: ', token);
+            });
+    }
+
+    handleSetPress() {
+        this.setState({ isQuerySet: true });
+    }
+
+    render() {
+        return (
+            <View style={styles.container}>
+                {this.state.isQuerySet ? (
+                    <Text>Tweets in the last one hour</Text>
+                ) : (
+                    <View style={styles.row}>
+                        <TextInput 
+                            style={styles.input}
+                            value={this.state.query}
+                            onChangeText={query => this.setState({ query })}
+                        />
+                        <TouchableHighlight style={styles.button} onPress={this.handleSetPress.bind(this)}>
+                            <Text style={styles.buttonText}>Set</Text>
+                        </TouchableHighlight>
+                    </View>
+                )}
+            </View>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'stretch',
+        justifyContent: 'flex-start',
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        margin: 20
+    },
+    input: {
+        flex: 1,
+        fontSize: 20
+    },
+    button: {
+        width: 100,
+        backgroundColor: '#0047AB',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 20,
+        padding: 10
+    },
+    buttonText: {
+        color: '#FFF',
+        fontSize: 20
+    }
 });

@@ -12,7 +12,26 @@ export default class App extends React.Component {
     componentDidMount() {
         firebase.messaging().getToken()
             .then((token) => {
-                // console.warn('Device FCM Token: ', token);
+                console.log('Device FCM Token: ', token);
+            });
+
+        // when app is running
+        firebase.messaging().onMessage((data) => {
+            const tweets = JSON.parse(data.message);
+            this.setState({
+                isQuerySet: true,
+                tweets
+            });
+        });
+
+        // when app is started by notification
+        firebase.messaging().getInitialNotification()
+            .then((notification) => {
+                const tweets = JSON.parse(notification.message);
+                this.setState({
+                    isQuerySet: true,
+                    tweets
+                });
             });
     }
 
@@ -44,8 +63,8 @@ export default class App extends React.Component {
                                 <View style={{ marginBottom: 20 }}>
                                     <Text style={styles.name}>{item.name}</Text>
                                     <Text style={styles.text}>{item.text}</Text>
-                                    <Button 
-                                        title="Retweet"  
+                                    <Button
+                                        title="Retweet"
                                         onPress={this.handleRetweet.bind(this)}
                                     />
                                 </View>

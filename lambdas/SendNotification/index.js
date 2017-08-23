@@ -13,30 +13,32 @@ exports.handler = (event, context, callback) => {
         } else if (data.Payload) {
             // send a push notification!
             const payload = JSON.parse(data.Payload);
-            request({
-                url: 'https://fcm.googleapis.com/fcm/send',
-                method: 'POST',
-                headers: {
-                    Authorization: `key=${process.env.FIREBASE_API_KEY}`
-                },
-                json: true,
-                body: {
-                    notification: {
-                        title: 'Your Tweets',
-                        text: `There are ${payload.length} tweets`,
+            if (payload.length) {
+                request({
+                    url: 'https://fcm.googleapis.com/fcm/send',
+                    method: 'POST',
+                    headers: {
+                        Authorization: `key=${process.env.FIREBASE_API_KEY}`
                     },
-                    data: {
-                        message: data.Payload
-                    },
-                    to: event.fcm_token
-                }
-            }, function (error, response, body) {
-                if (!error && response.statusCode === 200) {
-                    callback(null, payload);
-                } else {
-                    context.done('error', error);
-                }
-            });
+                    json: true,
+                    body: {
+                        notification: {
+                            title: 'Your Tweets',
+                            text: `There are ${payload.length} tweets`,
+                        },
+                        data: {
+                            message: data.Payload
+                        },
+                        to: event.fcm_token
+                    }
+                }, function (error, response, body) {
+                    if (!error && response.statusCode === 200) {
+                        callback(null, payload);
+                    } else {
+                        context.done('error', error);
+                    }
+                });
+            }
         } else {
             callback(null, []);
         }

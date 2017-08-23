@@ -1,8 +1,20 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableHighlight, FlatList, Button } from 'react-native';
+import twitter from 'react-native-twitter';
 import firebase from './firebase';
 
+const CONSUMER_KEY = 'hHx5eivE4jj2eAmGoiXIB4HjD';
+const CONSUMER_SECRET = 'nVx3ORIlIQYovjZFw0kW9UMmD8xAcnPyYZ2lPcDYisYBerg0Mb';
+const ACCESS_TOKEN = '181565054-kjXpkJ2xQtcGK4zuConSAdoma9l5KBmyVlgymnA2';
+const ACCESS_TOKEN_SECRET = 'nl2QQrEDeUAmiYwdJrQey6XsRVZa1TPHxrwTIsk7OudHp';
 const SET_QUERY_API = `https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets`;
+
+const client = twitter({
+    consumerKey: CONSUMER_KEY,
+    consumerSecret: CONSUMER_SECRET,
+    accessToken: ACCESS_TOKEN,
+    accessTokenSecret: ACCESS_TOKEN_SECRET
+});
 
 export default class App extends React.Component {
     state = {
@@ -29,11 +41,13 @@ export default class App extends React.Component {
         // when app is started by notification
         firebase.messaging().getInitialNotification()
             .then((notification) => {
-                const tweets = JSON.parse(notification.message);
-                this.setState({
-                    isQuerySet: true,
-                    tweets
-                });
+                if (notification && notification.message) {
+                    const tweets = JSON.parse(notification.message);
+                    this.setState({
+                        isQuerySet: true,
+                        tweets
+                    });
+                }
             });
     }
 
@@ -58,8 +72,20 @@ export default class App extends React.Component {
             });
     }
 
-    handleRetweet() {
-
+    handleRetweet(id) {
+        client.rest.post('statuses/retweet/:id', { id })
+            .then(() => {
+                let { tweets } = this.state;
+                tweets = tweets.slice();
+                const index = tweets.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    tweets[index] = {
+                        ...tweets[index],
+                        retweeted: true
+                    };
+                    this.setState({ tweets });
+                }
+            });
     }
 
     render() {
@@ -75,10 +101,14 @@ export default class App extends React.Component {
                                 <View style={{ marginBottom: 20 }}>
                                     <Text style={styles.name}>{item.name}</Text>
                                     <Text style={styles.text}>{item.text}</Text>
-                                    <Button
-                                        title="Retweet"
-                                        onPress={this.handleRetweet.bind(this)}
-                                    />
+                                    {item.retweeted ? (
+                                        <Text>Retweeted</Text>
+                                    ) : (
+                                            <Button
+                                                title="Retweet"
+                                                onPress={this.handleRetweet.bind(this, item.id)}
+                                            />
+                                        )}
                                 </View>
                             )}
                         />

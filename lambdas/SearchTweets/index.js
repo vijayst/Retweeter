@@ -18,6 +18,7 @@ exports.handler = (event, context, callback) => {
             data.statuses.forEach(function (status) {
                 if (moment(status.created_at).isAfter(oneHourAgo)) {
                     results.push({
+                        id: status.id,
                         name: status.user.screen_name,
                         text: status.text
                     });

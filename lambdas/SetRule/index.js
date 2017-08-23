@@ -26,8 +26,8 @@ exports.handler = (event, context, callback) => {
             if (err) console.log(err);
             
             const inputEvent = {
-                query: '#ReactJS',
-                fcm_token: 'eleByCqvIjU:APA91bGHGz3SinOnVSWEeKQYPd2VYf-UYu5Xg5MvPQtIT2TN-8Nz_A2ZTFMIyfQCqHWil8ighKmPtFHAKBMV7SUEmoWnbPEKuW_h-HPyuj2yxYGxgEWuiqn_UjsushAuFJzHPLH7VTv6'
+                query: event.query,
+                fcm_token: event.fcm_token
             };
             
             events.putTargets({
@@ -38,8 +38,16 @@ exports.handler = (event, context, callback) => {
                     Input: JSON.stringify(inputEvent)
                 }]
             }, function(err, data) {
-               if (err) console.log(err);
-               callback(null, 'Hello from Lambda'); 
+                if (err) console.log(err);
+               
+                lambda.invoke({
+                    FunctionName: 'search-tweets',
+                    Payload: JSON.stringify({ query: event.query })
+                }, function (error, data) {
+                    if (err) console.log(err);
+                    
+                    callback(null, JSON.parse(data.Payload)); 
+                });
             });
         });
     });

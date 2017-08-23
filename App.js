@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableHighlight, FlatList, Button } from 'react-native';
 import firebase from './firebase';
 
+const SET_QUERY_API = `https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets`;
+
 export default class App extends React.Component {
     state = {
         isQuerySet: false,
@@ -12,7 +14,7 @@ export default class App extends React.Component {
     componentDidMount() {
         firebase.messaging().getToken()
             .then((token) => {
-                console.log('Device FCM Token: ', token);
+                this.fcm_token = token;
             });
 
         // when app is running
@@ -36,7 +38,17 @@ export default class App extends React.Component {
     }
 
     handleSetPress() {
-        fetch(`https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets?query=${encodeURIComponent(this.state.query)}`)
+        fetch(SET_QUERY_API, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: this.state.query,
+                fcm_token: this.fcm_token
+            })
+        })
             .then(response => response.json())
             .then(json => {
                 this.setState({

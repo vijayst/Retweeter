@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableHighlight, FlatList, Button } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableHighlight, FlatList, Button, AsyncStorage } from 'react-native';
 import twitter from 'react-native-twitter';
 import firebase from './firebase';
 
@@ -23,6 +23,17 @@ export default class App extends React.Component {
         tweets: []
     }
 
+    componentWillMount() {
+        AsyncStorage.getItem('query', (error, result) => {
+            if (result) {
+                this.setState({
+                    isQuerySet: true,
+                    query: result
+                });
+            }
+        });
+    }
+
     componentDidMount() {
         firebase.messaging().getToken()
             .then((token) => {
@@ -33,7 +44,6 @@ export default class App extends React.Component {
         firebase.messaging().onMessage((data) => {
             const tweets = JSON.parse(data.message);
             this.setState({
-                isQuerySet: true,
                 tweets
             });
         });
@@ -44,7 +54,6 @@ export default class App extends React.Component {
                 if (notification && notification.message) {
                     const tweets = JSON.parse(notification.message);
                     this.setState({
-                        isQuerySet: true,
                         tweets
                     });
                 }
@@ -69,6 +78,7 @@ export default class App extends React.Component {
                     isQuerySet: true,
                     tweets: json
                 });
+                AsyncStorage.setItem('query', this.state.query);
             });
     }
 
@@ -88,13 +98,31 @@ export default class App extends React.Component {
             });
     }
 
+    handleReset() {
+        // call API
+        AsyncStorage.removeItem('query');
+        this.setState({
+            query: '',
+            isQuerySet: false,
+            tweets: []
+        });
+    }
+
     render() {
         return (
             <View style={styles.container}>
                 {this.state.isQuerySet ? (
                     <View style={styles.column}>
+                        <View style={styles.row}>
+                            <Text style={{ fontSize: 20 }}>Search for {this.state.query}</Text>
+                            <Button
+                                title="Reset"
+                                onPress={this.handleReset.bind(this)}
+                            />
+                        </View>
                         <Text style={styles.heading}>Tweets in the last one hour</Text>
                         <FlatList
+                            style={styles.flatList}
                             data={this.state.tweets}
                             keyExtractor={(item, index) => index}
                             renderItem={({ item }) => (
@@ -145,7 +173,6 @@ const styles = StyleSheet.create({
     },
     column: {
         justifyContent: 'space-between',
-        margin: 20
     },
     input: {
         flex: 1,
@@ -167,7 +194,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#0047AB',
         color: '#FFF',
         fontSize: 20,
-        padding: 5
+        padding: 5,
+        marginLeft: 20,
+        marginRight: 20
+    },
+    flatList: {
+        marginTop: 15,
+        marginLeft: 20,
+        marginRight: 20
     },
     name: {
         backgroundColor: '#ccc',

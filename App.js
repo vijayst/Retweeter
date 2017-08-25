@@ -126,8 +126,12 @@ export default class App extends React.Component {
             consumerKey: CONSUMER_KEY,
             consumerSecret: CONSUMER_SECRET
         }, 'retweeter://main')
-            .then(credentials => {
-                AsyncStorage.setItem('credentials', JSON.stringify(credentials));
+            .then(user => {
+                this.user = user;
+                this.setState({
+                    loggedIn: true
+                });
+                AsyncStorage.setItem('credentials', JSON.stringify(user));
             });
     }
 

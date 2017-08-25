@@ -34,7 +34,7 @@
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />
             <data 
-                android:scheme="com.vijayt.retweeter"
+                android:scheme="retweeter"
                 android:host="main"
             />
         </intent-filter>

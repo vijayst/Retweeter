@@ -42,10 +42,12 @@ export default class App extends React.Component {
 
         // when app is running
         firebase.messaging().onMessage((data) => {
-            const tweets = JSON.parse(data.message);
-            this.setState({
-                tweets
-            });
+            if (data && data.message) {
+                const tweets = JSON.parse(data.message);
+                this.setState({
+                    tweets
+                });
+            }
         });
 
         // when app is started by notification
@@ -124,9 +126,9 @@ export default class App extends React.Component {
             consumerKey: CONSUMER_KEY,
             consumerSecret: CONSUMER_SECRET
         }, 'retweeter://main')
-        .then(credentials => {
-            AsyncStorage.setItem('credentials', JSON.stringify(credentials));
-        });
+            .then(credentials => {
+                AsyncStorage.setItem('credentials', JSON.stringify(credentials));
+            });
     }
 
     render() {

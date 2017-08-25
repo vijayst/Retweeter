@@ -71,7 +71,8 @@ export default class App extends React.Component {
             },
             body: JSON.stringify({
                 query: this.state.query,
-                fcm_token: this.fcm_token
+                fcm_token: this.fcm_token,
+                name: this.user.name
             })
         })
             .then(response => response.json())
@@ -107,7 +108,7 @@ export default class App extends React.Component {
     }
 
     handleReset() {
-        fetch(TWEETS_API, {
+        fetch(`${TWEETS_API}?name=${this.user.name}`, {
             method: 'DELETE'
         })
             .then(response => response.json())

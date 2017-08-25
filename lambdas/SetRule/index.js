@@ -10,7 +10,7 @@ const RULE_NAME = 'send-notification-trigger';
 exports.handler = (event, context, callback) => {
     
     events.putRule({
-        Name: RULE_NAME,
+        Name: RULE_NAME + '-' + event.name,
         ScheduleExpression: FREQUENCY,
         State: 'ENABLED',
     }, function(err, data) {
@@ -18,7 +18,7 @@ exports.handler = (event, context, callback) => {
         
         lambda.addPermission({
             FunctionName: FN_NAME,
-            StatementId: FN_NAME + '-event',
+            StatementId: FN_NAME + '-event' + '-' + event.name,
             Action: 'lambda:InvokeFunction',
             Principal: 'events.amazonaws.com',
             SourceArn: data.RuleArn
@@ -31,9 +31,9 @@ exports.handler = (event, context, callback) => {
             };
             
             events.putTargets({
-                Rule: RULE_NAME,
+                Rule: RULE_NAME + '-' + event.name,
                 Targets: [{
-                    Id: '1',
+                    Id: event.name,
                     Arn: FN_ARN,
                     Input: JSON.stringify(inputEvent)
                 }]

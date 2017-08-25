@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableHighlight, FlatList, Button, AsyncStorage } from 'react-native';
-import twitter from 'react-native-twitter';
+import { StyleSheet, Text, View, TextInput, TouchableHighlight, FlatList, Button, AsyncStorage, Linking } from 'react-native';
+import twitter, { auth } from 'react-native-twitter';
 import firebase from './firebase';
 
 const CONSUMER_KEY = 'hHx5eivE4jj2eAmGoiXIB4HjD';
@@ -18,12 +18,27 @@ const client = twitter({
 
 export default class App extends React.Component {
     state = {
+        loggedIn: false,
         isQuerySet: false,
         query: '',
         tweets: []
     }
 
     componentWillMount() {
+        Linking.getInitialURL().then((url) => {
+            if (url) {
+              console.warn('Initial url is: ' + url);
+            }
+          }).catch(err => console.error('An error occurred', err));
+
+        AsyncStorage.getItem('credentials', (error, result) => {
+            if (result) {
+                this.user = JSON.parse(result);
+                this.setState({
+                    loggedIn: true
+                });
+            }
+        });
         AsyncStorage.getItem('query', (error, result) => {
             if (result) {
                 this.setState({
@@ -113,49 +128,71 @@ export default class App extends React.Component {
             });
     }
 
+    handleLogin() {
+        auth({
+            consumerKey: CONSUMER_KEY,
+            consumerSecret: CONSUMER_SECRET
+        }, 'com.vijayt.retweeter://main');
+
+
+        // .then(credentials => {
+        //     this.credentials = credentials;
+        //     AsyncStorage.setItem('credentials', JSON.stringify(credentials));
+        //     this.setState({ loggedIn: true });
+        // });
+    }
+
     render() {
         return (
             <View style={styles.container}>
-                {this.state.isQuerySet ? (
-                    <View style={styles.column}>
-                        <View style={styles.row}>
-                            <Text style={{ fontSize: 20 }}>Search for {this.state.query}</Text>
-                            <Button
-                                title="Reset"
-                                onPress={this.handleReset.bind(this)}
+                {this.state.loggedIn ?
+                    this.state.isQuerySet ? (
+                        <View style={styles.column}>
+                            <View style={styles.row}>
+                                <Text style={{ fontSize: 20 }}>Search for {this.state.query}</Text>
+                                <Button
+                                    title="Reset"
+                                    onPress={this.handleReset.bind(this)}
+                                />
+                            </View>
+                            <Text style={styles.heading}>Tweets in the last one hour</Text>
+                            <FlatList
+                                style={styles.flatList}
+                                data={this.state.tweets}
+                                keyExtractor={(item, index) => index}
+                                renderItem={({ item }) => (
+                                    <View style={{ marginBottom: 20 }}>
+                                        <Text style={styles.name}>{item.name}</Text>
+                                        <Text style={styles.text}>{item.text}</Text>
+                                        {item.retweeted ? (
+                                            <Text>Retweeted</Text>
+                                        ) : (
+                                                <Button
+                                                    title="Retweet"
+                                                    onPress={this.handleRetweet.bind(this, item.id)}
+                                                />
+                                            )}
+                                    </View>
+                                )}
                             />
                         </View>
-                        <Text style={styles.heading}>Tweets in the last one hour</Text>
-                        <FlatList
-                            style={styles.flatList}
-                            data={this.state.tweets}
-                            keyExtractor={(item, index) => index}
-                            renderItem={({ item }) => (
-                                <View style={{ marginBottom: 20 }}>
-                                    <Text style={styles.name}>{item.name}</Text>
-                                    <Text style={styles.text}>{item.text}</Text>
-                                    {item.retweeted ? (
-                                        <Text>Retweeted</Text>
-                                    ) : (
-                                            <Button
-                                                title="Retweet"
-                                                onPress={this.handleRetweet.bind(this, item.id)}
-                                            />
-                                        )}
-                                </View>
-                            )}
-                        />
-                    </View>
-                ) : (
-                        <View style={styles.row}>
-                            <TextInput
-                                style={styles.input}
-                                value={this.state.query}
-                                onChangeText={query => this.setState({ query })}
+                    ) : (
+                            <View style={styles.row}>
+                                <TextInput
+                                    style={styles.input}
+                                    value={this.state.query}
+                                    onChangeText={query => this.setState({ query })}
+                                />
+                                <TouchableHighlight style={styles.button} onPress={this.handleSetPress.bind(this)}>
+                                    <Text style={styles.buttonText}>Set</Text>
+                                </TouchableHighlight>
+                            </View>
+                        ) : (
+                        <View style={styles.loginView}>
+                            <Button 
+                                title="Login with Twitter"
+                                onPress={this.handleLogin.bind(this)}
                             />
-                            <TouchableHighlight style={styles.button} onPress={this.handleSetPress.bind(this)}>
-                                <Text style={styles.buttonText}>Set</Text>
-                            </TouchableHighlight>
                         </View>
                     )}
             </View>
@@ -169,6 +206,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'stretch',
         justifyContent: 'flex-start',
+    },
+    loginView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     row: {
         flexDirection: 'row',

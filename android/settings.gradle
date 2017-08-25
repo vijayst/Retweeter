@@ -1,4 +1,6 @@
 rootProject.name = 'Retweeter'
+include ':react-native-twitter'
+project(':react-native-twitter').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-twitter/android')
 
 include ':app'
 include ':react-native-firebase'

@@ -27,9 +27,35 @@ export default class App extends React.Component {
     componentWillMount() {
         Linking.getInitialURL().then((url) => {
             if (url) {
-              console.warn('Initial url is: ' + url);
+                const urlParts = url.split('?');
+                if (urlParts.length === 2) {
+                    const queries = urlParts[1].split('&');
+                    const query = queries.find(q => q.indexOf('oauth_verifier') !== -1);
+                    const queryParts = query.split('=');
+                    if (queryParts.length === 2) {
+                        const oAuthVerifier = queryParts[1];
+                        console.warn('found query', oAuthVerifier);
+                        fetch('https://api.twitter.com/oauth/access_token', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                oauth_verifier: oAuthVerifier
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(json => {
+                            console.warn(JSON.stringify(json));
+                            this.credentials = json;
+                            AsyncStorage.setItem('credentials', JSON.stringify(json));
+                            this.setState({ loggedIn: true });
+                        });
+                    }
+                }
             }
-          }).catch(err => console.error('An error occurred', err));
+        });
 
         AsyncStorage.getItem('credentials', (error, result) => {
             if (result) {
@@ -133,13 +159,6 @@ export default class App extends React.Component {
             consumerKey: CONSUMER_KEY,
             consumerSecret: CONSUMER_SECRET
         }, 'com.vijayt.retweeter://main');
-
-
-        // .then(credentials => {
-        //     this.credentials = credentials;
-        //     AsyncStorage.setItem('credentials', JSON.stringify(credentials));
-        //     this.setState({ loggedIn: true });
-        // });
     }
 
     render() {
@@ -189,7 +208,7 @@ export default class App extends React.Component {
                             </View>
                         ) : (
                         <View style={styles.loginView}>
-                            <Button 
+                            <Button
                                 title="Login with Twitter"
                                 onPress={this.handleLogin.bind(this)}
                             />

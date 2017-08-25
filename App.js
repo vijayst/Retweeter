@@ -27,13 +27,13 @@ export default class App extends React.Component {
     componentWillMount() {
         Linking.getInitialURL().then((url) => {
             if (url) {
+                console.warn(url);
                 const urlParts = url.split('?');
                 if (urlParts.length === 2) {
                     const queries = urlParts[1].split('&');
-                    const query = queries.find(q => q.indexOf('oauth_verifier') !== -1);
-                    const queryParts = query.split('=');
-                    if (queryParts.length === 2) {
-                        const oAuthVerifier = queryParts[1];
+                    const oAuthToken = queries[0].split('=')[1];
+                    const oAuthVerifier = queries[1].split('=')[1];
+                    if (true) {
                         console.warn('found query', oAuthVerifier);
                         fetch('https://api.twitter.com/oauth/access_token', {
                             method: 'POST',
@@ -42,7 +42,10 @@ export default class App extends React.Component {
                                 'Accept': 'application/json'
                             },
                             body: JSON.stringify({
-                                oauth_verifier: oAuthVerifier
+                                consumer_key: CONSUMER_KEY,
+                                consumer_secret: CONSUMER_SECRET,
+                                token: oAuthToken,
+                                verifier: oAuthVerifier
                             })
                         })
                         .then(response => response.json())

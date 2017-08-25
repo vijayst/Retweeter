@@ -25,41 +25,6 @@ export default class App extends React.Component {
     }
 
     componentWillMount() {
-        Linking.getInitialURL().then((url) => {
-            if (url) {
-                console.warn(url);
-                const urlParts = url.split('?');
-                if (urlParts.length === 2) {
-                    const queries = urlParts[1].split('&');
-                    const oAuthToken = queries[0].split('=')[1];
-                    const oAuthVerifier = queries[1].split('=')[1];
-                    if (true) {
-                        console.warn('found query', oAuthVerifier);
-                        fetch('https://api.twitter.com/oauth/access_token', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                consumer_key: CONSUMER_KEY,
-                                consumer_secret: CONSUMER_SECRET,
-                                token: oAuthToken,
-                                verifier: oAuthVerifier
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(json => {
-                            console.warn(JSON.stringify(json));
-                            this.credentials = json;
-                            AsyncStorage.setItem('credentials', JSON.stringify(json));
-                            this.setState({ loggedIn: true });
-                        });
-                    }
-                }
-            }
-        });
-
         AsyncStorage.getItem('credentials', (error, result) => {
             if (result) {
                 this.user = JSON.parse(result);
@@ -161,7 +126,10 @@ export default class App extends React.Component {
         auth({
             consumerKey: CONSUMER_KEY,
             consumerSecret: CONSUMER_SECRET
-        }, 'com.vijayt.retweeter://main');
+        }, 'retweeter://main')
+        .then(credentials => {
+            AsyncStorage.setItem('credentials', JSON.stringify(credentials));
+        });
     }
 
     render() {

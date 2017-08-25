@@ -5,16 +5,7 @@ import firebase from './firebase';
 
 const CONSUMER_KEY = 'hHx5eivE4jj2eAmGoiXIB4HjD';
 const CONSUMER_SECRET = 'nVx3ORIlIQYovjZFw0kW9UMmD8xAcnPyYZ2lPcDYisYBerg0Mb';
-const ACCESS_TOKEN = '181565054-kjXpkJ2xQtcGK4zuConSAdoma9l5KBmyVlgymnA2';
-const ACCESS_TOKEN_SECRET = 'nl2QQrEDeUAmiYwdJrQey6XsRVZa1TPHxrwTIsk7OudHp';
 const TWEETS_API = `https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets`;
-
-const client = twitter({
-    consumerKey: CONSUMER_KEY,
-    consumerSecret: CONSUMER_SECRET,
-    accessToken: ACCESS_TOKEN,
-    accessTokenSecret: ACCESS_TOKEN_SECRET
-});
 
 export default class App extends React.Component {
     state = {
@@ -92,6 +83,12 @@ export default class App extends React.Component {
     }
 
     handleRetweet(id) {
+        const client = twitter({
+            consumerKey: CONSUMER_KEY,
+            consumerSecret: CONSUMER_SECRET,
+            accessToken: this.user.accessToken,
+            accessTokenSecret: this.user.accessTokenSecret
+        });
         client.rest.post('statuses/retweet/:id', { id })
             .then(() => {
                 let { tweets } = this.state;

@@ -7,7 +7,7 @@ const CONSUMER_KEY = 'hHx5eivE4jj2eAmGoiXIB4HjD';
 const CONSUMER_SECRET = 'nVx3ORIlIQYovjZFw0kW9UMmD8xAcnPyYZ2lPcDYisYBerg0Mb';
 const ACCESS_TOKEN = '181565054-kjXpkJ2xQtcGK4zuConSAdoma9l5KBmyVlgymnA2';
 const ACCESS_TOKEN_SECRET = 'nl2QQrEDeUAmiYwdJrQey6XsRVZa1TPHxrwTIsk7OudHp';
-const SET_QUERY_API = `https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets`;
+const TWEETS_API = `https://fvmylcig0b.execute-api.us-west-2.amazonaws.com/prod/tweets`;
 
 const client = twitter({
     consumerKey: CONSUMER_KEY,
@@ -61,7 +61,7 @@ export default class App extends React.Component {
     }
 
     handleSetPress() {
-        fetch(SET_QUERY_API, {
+        fetch(TWEETS_API, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -99,13 +99,18 @@ export default class App extends React.Component {
     }
 
     handleReset() {
-        // call API
-        AsyncStorage.removeItem('query');
-        this.setState({
-            query: '',
-            isQuerySet: false,
-            tweets: []
-        });
+        fetch(TWEETS_API, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(json => {
+                AsyncStorage.removeItem('query');
+                this.setState({
+                    query: '',
+                    isQuerySet: false,
+                    tweets: []
+                });
+            });
     }
 
     render() {
